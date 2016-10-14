@@ -1,6 +1,6 @@
 package com.app;
 
-public class DnsAnswer {
+public class TextUI {
 
     public static void printRequest(String name, String server_IP, String request_type) {
         System.out.println("DnsClient sending request for " + name +

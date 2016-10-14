@@ -1,19 +1,20 @@
 package com.app;
 
-import java.util.ArrayList;
 import java.io.IOException;
 
 public class DnsClient {
 
-    private static final String DEFAULT_TIMEOUT = "5";
-    private static final String DEFAULT_MAX_RETRIES = "3";
-    private static final String DEFAULT_PORT = "53";
-
-    public static ArrayList<String> split_cmd_args(String[] args) throws IOException
+    public static DnsQuery parseArgsForDnsQuery(String[] args) throws IOException
     {
-        String flag = "A";
-        String server_ip = "";
-        String domain_name = "";
+
+        String timeout = "";
+        String maxRetries = "";
+        String port = "";
+        String requestType = "";
+        String serverIp = "";
+        String domainName = "";
+
+        DnsQuery query = new DnsQuery();
 
         if (args.length < 3) {
             throw new IOException("DNS Client missing arguments!");
@@ -25,36 +26,36 @@ public class DnsClient {
             }
             //@ server name
             if (args[i].startsWith("@")) {
-                server_ip = args[i].substring(1);
+                serverIp = args[i].substring(1);
                 if (i == args.length - 1) {
-                    DnsAnswer.printError(2, "Domain name is missing!" );
+                    TextUI.printError(2, "Domain name is missing!" );
                 }
                 else {
-                    domain_name = args[i + 1];
+                    domainName = args[i + 1];
                 }
             }
         }
 
-        if (server_ip.equals("") || domain_name.equals("")) {
-            DnsAnswer.printError(2, "There is no input for server or domain name.");
+        if (serverIp.equals("") || domainName.equals("")) {
+            TextUI.printError(2, "There is no input for server or domain name.");
         }
 
-        ArrayList<String> command = new ArrayList<>();
-        command.add(0, DEFAULT_TIMEOUT);
-        command.add(1, DEFAULT_MAX_RETRIES);
-        command.add(2, DEFAULT_PORT);
-        command.add(3, flag);
-        command.add(4, server_ip);
-        command.add(5, domain_name);
+        // TODO
+        query.setTimeout(timeout);
+        query.setMaxRetries(maxRetries);
+        query.setPort(port);
+        query.setRequestType(requestType);
+        query.setServerIp(serverIp);
+        query.setDomainName(domainName);
 
-        return command;
+        return query;
     }
 
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        ArrayList lookup_args;
+        DnsQuery query;
         try {
-            lookup_args = split_cmd_args(args);
+            query = parseArgsForDnsQuery(args);
         } catch (Exception e){
             e.printStackTrace();
         }
