@@ -17,6 +17,9 @@ public class DnsQuery {
     private String serverIp;
     private String domainName;
 
+    /**
+     *
+     */
     public DnsQuery(){
         timeout = DEFAULT_TIMEOUT;
         maxRetries = DEFAULT_MAX_RETRIES;

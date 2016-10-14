@@ -3,9 +3,16 @@ package com.app;
 import com.app.UserInterface.TextUI;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 
 public class DnsClient {
 
+    /**
+     *
+     * @param args
+     * @return
+     * @throws IOException
+     */
     public static DnsQuery parseArgsForDnsQuery(String[] args) throws IOException
     {
         DnsQuery query = new DnsQuery();
@@ -21,6 +28,8 @@ public class DnsClient {
             throw new IOException("DNS Client missing arguments!");
         }
 
+        // TODO
+        // parse arguments
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith("-")) {
                 //TODO
@@ -53,7 +62,11 @@ public class DnsClient {
         return query;
     }
 
-    public static void checkDnsQuery(DnsQuery query){
+    /**
+     *
+     * @param query
+     */
+    public static void validateDnsQuery(DnsQuery query){
         // check if this is a working query (not missing anything)
 
         if (query.getServerIp().equals("") || query.getDomainName().equals("")) {
@@ -63,13 +76,35 @@ public class DnsClient {
         // TODO
     }
 
+    /**
+     *
+     * @param query
+     * @throws IOException
+     */
+    public static void performDnsLookup(DnsQuery query) throws IOException{
+
+        String hostname = query.getServerIp();
+        int portNumber = Integer.valueOf(query.getPort());
+
+        DatagramSocket socket = new DatagramSocket();
+
+
+
+        // TODO
+    }
+
+    /**
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         DnsQuery query;
         try {
             query = parseArgsForDnsQuery(args);
-            checkDnsQuery(query);
+            validateDnsQuery(query);
 
             // TODO
+            performDnsLookup(query);
 
 
         } catch (IOException e){
