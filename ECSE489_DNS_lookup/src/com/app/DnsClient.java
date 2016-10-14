@@ -29,11 +29,9 @@ public class DnsClient {
             if (args[i].startsWith("-")) {
                 //TODO
             }
-
             //@ server name
             if (args[i].startsWith("@")) {
                 server_ip = args[i].substring(1);
-
                 if (i == args.length - 1) {
                     DnsAnswer.printError(2, "Domain name is missing!" );
                 }

@@ -40,23 +40,19 @@ public class DnsAnswer {
             case 1:
                 System.out.println("NOTFOUND");
                 break;
-
             case 2:
                 System.out.println("ERROR\t" + description);
                 System.exit(0);
                 break;
-
             //Be specific with the error messages
             case 3:
                 System.out.println("ERROR\tIncorrect input syntax: " + description);
                 System.exit(0);
                 break;
-
             case 4:
                 System.out.println("ERROR\tMaximum number of retries " + description + " exceeded");
                 System.exit(0);
                 break;
-
             case 5:
                 System.out.println("ERROR\tUnexpected response " + description);
                 System.exit(0);
