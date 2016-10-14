@@ -1,5 +1,7 @@
 package com.app;
 
+import com.app.UserInterface.TextUI;
+
 import java.io.IOException;
 
 public class DnsClient {
