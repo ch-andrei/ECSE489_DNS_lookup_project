@@ -8,6 +8,7 @@ public class DnsClient {
 
     public static DnsQuery parseArgsForDnsQuery(String[] args) throws IOException
     {
+        DnsQuery query = new DnsQuery();
 
         String timeout = "";
         String maxRetries = "";
@@ -15,8 +16,6 @@ public class DnsClient {
         String requestType = "";
         String serverIp = "";
         String domainName = "";
-
-        DnsQuery query = new DnsQuery();
 
         if (args.length < 3) {
             throw new IOException("DNS Client missing arguments!");
@@ -38,32 +37,43 @@ public class DnsClient {
             }
         }
 
-        if (serverIp.equals("") || domainName.equals("")) {
-            TextUI.printError(2, "There is no input for server or domain name.");
-        }
-
-        // TODO
-        query.setTimeout(timeout);
-        query.setMaxRetries(maxRetries);
-        query.setPort(port);
-        query.setRequestType(requestType);
-        query.setServerIp(serverIp);
-        query.setDomainName(domainName);
+        if (!timeout.equals(""))
+            query.setTimeout(timeout);
+        if (!maxRetries.equals(""))
+            query.setMaxRetries(maxRetries);
+        if (!port.equals(""))
+            query.setPort(port);
+        if (!requestType.equals(""))
+            query.setRequestType(requestType);
+        if (!serverIp.equals(""))
+            query.setServerIp(serverIp);
+        if (!domainName.equals(""))
+            query.setDomainName(domainName);
 
         return query;
     }
 
+    public static void checkDnsQuery(DnsQuery query){
+        // check if this is a working query (not missing anything)
+
+        if (query.getServerIp().equals("") || query.getDomainName().equals("")) {
+            TextUI.printError(2, "There is no input for server or domain name.");
+        }
+
+        // TODO
+    }
+
     public static void main(String[] args) {
-        // TODO Auto-generated method stub
         DnsQuery query;
         try {
             query = parseArgsForDnsQuery(args);
-        } catch (Exception e){
+            checkDnsQuery(query);
+
+            // TODO
+
+
+        } catch (IOException e){
             e.printStackTrace();
         }
-
-
-
-
     }
 }
