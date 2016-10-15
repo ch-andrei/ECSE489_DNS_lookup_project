@@ -34,16 +34,16 @@ public class DnsClient {
             if (args[i].startsWith("-")) {
                 //TODO
                 if (args[i].equals("-t")) {
-                    timeout = args[i + 1];
+                    timeout = args[i++ + 1];
                 }
                 else if (args[i].equals("-r")) {
-                    maxRetries = args[i + 1];
+                    maxRetries = args[i++ + 1];
                 }
-                else if (args1[i].equals("-p")) {
-                    port = args[i + 1];
+                else if (args[i].equals("-p")) {
+                    port = args[i++ + 1];
                 }
-                else if(args1[i].equals("-mx") || args1[i].equals("-ns")){
-                    requestType = args1[i].substring(1).toUpperCase();
+                else if(args[i].equals("-mx") || args[i].equals("-ns")){
+                    requestType = args[i++].substring(1).toUpperCase();
                 }
             }
             //@ server name
