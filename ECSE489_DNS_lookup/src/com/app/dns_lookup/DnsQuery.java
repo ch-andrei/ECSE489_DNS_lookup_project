@@ -1,5 +1,8 @@
 package com.app.dns_lookup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Andrei-ch on 2016-10-14.
  */
@@ -27,6 +30,45 @@ public class DnsQuery {
         requestType = DEFAULT_REQUEST_TYPE;
         serverIp = "";
         domainName = "";
+    }
+
+    /**
+     *
+     * @return
+     */
+    public byte[] getServerNameAsBytes(){
+        byte fixedServer[] = new byte[4];
+        int index = 0;
+        for (byte b : getServerIp().getBytes()){
+            if (b != '.'){
+                fixedServer[index++] = b;
+            }
+        }
+        return fixedServer;
+    }
+
+    /**
+     *
+     * @param domainName
+     * @return
+     */
+    public List<char[]> getDomainNameAsList(){
+        ArrayList<char[]> labels = new ArrayList<>();
+        int i = 0, j = 0, k = 0;
+        while (i < getDomainName().length()){
+            while (i < getDomainName().length() && getDomainName().charAt(i) != '.'){
+                i++;
+            }
+            char[] label = new char[i-j];
+            k = 0;
+            while (j < i){
+                label[k++] = getDomainName().charAt(j++);
+            }
+            labels.add(label);
+            j++;
+            i++;
+        }
+        return labels;
     }
 
     public String getDomainName() {

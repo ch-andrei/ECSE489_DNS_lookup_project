@@ -99,10 +99,7 @@ public class DnsClient {
         try {
             query = parseArgsForDnsQuery(args);
             validateDnsQuery(query);
-
-            // TODO
             performDnsLookup(query);
-
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -114,16 +111,12 @@ public class DnsClient {
      * @throws IOException
      */
     public static void performDnsLookup(DnsQuery query) throws IOException{
-
         DnsPacket questionPacket = new DnsQuestionPacket(query);
-
-        String hostname = query.getServerIp();
-        int portNumber = Integer.valueOf(query.getPort());
-
         DatagramSocket socket = new DatagramSocket();
-
         try {
+            TextUI.print("Sending question...");
             socket.send(questionPacket.getDatagramPacket());
+            TextUI.print("Sending question complete.");
         } catch (IOException ie) {
             System.out.println("ERROR\tCould not send packet.");
             return;
@@ -132,7 +125,9 @@ public class DnsClient {
         byte[] answerBuffer = new byte[DnsPacket.MAX_PACKET_SIZE];
         DatagramPacket answerPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
         try {
+            TextUI.print("Waiting for response...");
             socket.receive(answerPacket);
+            TextUI.print("Receieved response.");
         } catch (IOException ie) {
             System.out.println("ERROR\tCould not receive packet.");
             return;
