@@ -1,4 +1,4 @@
-package com.app.UserInterface;
+package com.app.user_interface;
 
 public class TextUI {
 

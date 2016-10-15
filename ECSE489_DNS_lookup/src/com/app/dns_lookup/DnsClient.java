@@ -1,6 +1,6 @@
-package com.app;
+package com.app.dns_lookup;
 
-import com.app.UserInterface.TextUI;
+import com.app.user_interface.TextUI;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -78,6 +78,25 @@ public class DnsClient {
 
     /**
      *
+     * @param args
+     * @throws IOException
+     */
+    public static void performDnsLookup(String[] args) throws IOException{
+        DnsQuery query;
+        try {
+            query = parseArgsForDnsQuery(args);
+            validateDnsQuery(query);
+
+            // TODO
+            performDnsLookup(query);
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *
      * @param query
      * @throws IOException
      */
@@ -89,26 +108,6 @@ public class DnsClient {
         DatagramSocket socket = new DatagramSocket();
 
 
-
         // TODO
-    }
-
-    /**
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        DnsQuery query;
-        try {
-            query = parseArgsForDnsQuery(args);
-            validateDnsQuery(query);
-
-            // TODO
-            performDnsLookup(query);
-
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
     }
 }

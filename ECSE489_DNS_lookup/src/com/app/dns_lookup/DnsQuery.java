@@ -1,4 +1,4 @@
-package com.app;
+package com.app.dns_lookup;
 
 /**
  * Created by Andrei-ch on 2016-10-14.
