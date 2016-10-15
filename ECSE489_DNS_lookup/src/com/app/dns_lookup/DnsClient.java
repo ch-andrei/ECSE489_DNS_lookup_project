@@ -111,8 +111,13 @@ public class DnsClient {
      * @throws IOException
      */
     public static void performDnsLookup(DnsQuery query) throws IOException{
-        DnsPacket questionPacket = new DnsQuestionPacket(query);
         DatagramSocket socket = new DatagramSocket();
+        socket.setSoTimeout(Integer.valueOf(query.getTimeout()));
+
+        // setup packet
+        DnsPacket questionPacket = new DnsQuestionPacket(query);
+
+        // send question
         try {
             TextUI.print("Sending question...");
             socket.send(questionPacket.getDatagramPacket());
@@ -122,17 +127,25 @@ public class DnsClient {
             return;
         }
 
-        byte[] answerBuffer = new byte[DnsPacket.MAX_PACKET_SIZE];
-        DatagramPacket answerPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
-        try {
-            TextUI.print("Waiting for response...");
-            socket.receive(answerPacket);
-            TextUI.print("Receieved response.");
-        } catch (IOException ie) {
-            System.out.println("ERROR\tCould not receive packet.");
-            return;
+        // wait for response
+        int counter = 0;
+        boolean receieved = false;
+        while (counter < Integer.valueOf(query.getMaxRetries())) {
+            byte[] answerBuffer = new byte[DnsPacket.MAX_PACKET_SIZE];
+            DatagramPacket answerPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
+            try {
+                TextUI.print("[" + (counter + 1) + "] Waiting for response...");
+                socket.receive(answerPacket);
+                TextUI.print("Receieved response.");
+                receieved = true;
+            } catch (IOException ie) {
+                TextUI.print("[" + (counter + 1) + "] Timeout: No response from server.");
+            }
+            counter++;
         }
-
+        if (!receieved)
+            TextUI.print("Max number of retries reached: no response from server.");
+        // close the socket
         socket.close();
     }
 }
