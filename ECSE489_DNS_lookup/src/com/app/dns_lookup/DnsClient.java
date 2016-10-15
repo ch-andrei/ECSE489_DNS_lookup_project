@@ -16,9 +16,9 @@ public class DnsClient {
      * @return
      * @throws IOException
      */
-    public static DnsQuery parseArgsForDnsQuery(String[] args) throws IOException
+    public static DnsLookupRequest parseArgsForDnsQuery(String[] args) throws IOException
     {
-        DnsQuery query = new DnsQuery();
+        DnsLookupRequest request = new DnsLookupRequest();
 
         String timeout = "";
         String maxRetries = "";
@@ -33,56 +33,56 @@ public class DnsClient {
 
         // parse arguments
         for (int i = 0; i < args.length; i++) {
-            if (args[i].startsWith("-")) {
-                if (args[i].equals("-t")) {
-                    timeout = args[i++ + 1];
-                }
-                else if (args[i].equals("-r")) {
-                    maxRetries = args[i++ + 1];
-                }
-                else if (args[i].equals("-p")) {
-                    port = args[i++ + 1];
-                }
-                else if(args[i].equals("-mx") || args[i].equals("-ns")){
-                    requestType = args[i++].substring(1).toUpperCase();
-                }
+            if (args[i].contains("-t")) {
+                timeout += args[i+1];
+            }
+            else if (args[i].contains("-r")) {
+                maxRetries += args[i+1];
+            }
+            else if (args[i].contains("-p")) {
+                port += args[i+1];
+            }
+            else if(args[i].contains("-mx") || args[i].contains("-ns")){
+                requestType += args[i].substring(1).toUpperCase();
             }
             //@ server name
-            if (args[i].startsWith("@")) {
-                serverIp = args[i].substring(1);
+            else if (args[i].startsWith("@")) {
+                serverIp += args[i].substring(1);
                 if (i == args.length - 1) {
                     TextUI.printError(2, "Domain name is missing!" );
                 }
                 else {
-                    domainName = args[i + 1];
+                    domainName += args[i + 1];
                 }
             }
         }
 
         if (!timeout.equals(""))
-            query.setTimeout(timeout);
+            request.setTimeout(timeout);
         if (!maxRetries.equals(""))
-            query.setMaxRetries(maxRetries);
+            request.setMaxRetries(maxRetries);
         if (!port.equals(""))
-            query.setPort(port);
+            request.setPort(port);
         if (!requestType.equals(""))
-            query.setRequestType(requestType);
+            request.setRequestType(requestType);
         if (!serverIp.equals(""))
-            query.setServerIp(serverIp);
+            request.setServerIp(serverIp);
         if (!domainName.equals(""))
-            query.setDomainName(domainName);
+            request.setDomainName(domainName);
 
-        return query;
+        TextUI.print(request.toString());
+
+        return request;
     }
 
     /**
      *
-     * @param query
+     * @param request
      */
-    public static void validateDnsQuery(DnsQuery query){
-        // check if this is a working query (not missing anything)
+    public static void validateDnsQuery(DnsLookupRequest request){
+        // check if this is a working request (not missing anything)
 
-        if (query.getServerIp().equals("") || query.getDomainName().equals("")) {
+        if (request.getServerIp().equals("") || request.getDomainName().equals("")) {
             TextUI.printError(2, "There is no input for server or domain name.");
         }
 
@@ -95,11 +95,11 @@ public class DnsClient {
      * @throws IOException
      */
     public static void performDnsLookup(String[] args) throws IOException{
-        DnsQuery query;
+        DnsLookupRequest request;
         try {
-            query = parseArgsForDnsQuery(args);
-            validateDnsQuery(query);
-            performDnsLookup(query);
+            request = parseArgsForDnsQuery(args);
+            validateDnsQuery(request);
+            performDnsLookup(request);
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -107,30 +107,33 @@ public class DnsClient {
 
     /**
      *
-     * @param query
+     * @param request
      * @throws IOException
      */
-    public static void performDnsLookup(DnsQuery query) throws IOException{
+    public static void performDnsLookup(DnsLookupRequest request) throws IOException{
         DatagramSocket socket = new DatagramSocket();
-        socket.setSoTimeout(Integer.valueOf(query.getTimeout()));
+        int timeout = Integer.valueOf(request.getTimeout());
+        socket.setSoTimeout(timeout);
 
         // setup packet
-        DnsPacket questionPacket = new DnsQuestionPacket(query);
+        DnsPacket questionPacket = new DnsQuestionPacket(request);
 
-        // send question
-        try {
-            TextUI.print("Sending question...");
-            socket.send(questionPacket.getDatagramPacket());
-            TextUI.print("Sending question complete.");
-        } catch (IOException ie) {
-            System.out.println("ERROR\tCould not send packet.");
-            return;
-        }
+        TextUI.print(questionPacket.toString());
 
-        // wait for response
         int counter = 0;
         boolean receieved = false;
-        while (counter < Integer.valueOf(query.getMaxRetries())) {
+        while (!receieved && counter < Integer.valueOf(request.getMaxRetries())) {
+            // send question
+            try {
+                TextUI.print("[" + (counter + 1) + "] Sending question...");
+                socket.send(questionPacket.getDatagramPacket());
+                TextUI.print("[" + (counter + 1) + "] Sending question complete.");
+            } catch (IOException ie) {
+                System.out.println("Error: failed to send packet.");
+                return;
+            }
+
+            // wait for response
             byte[] answerBuffer = new byte[DnsPacket.MAX_PACKET_SIZE];
             DatagramPacket answerPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
             try {
@@ -139,6 +142,7 @@ public class DnsClient {
                 TextUI.print("Receieved response.");
                 receieved = true;
             } catch (IOException ie) {
+                //ie.printStackTrace();
                 TextUI.print("[" + (counter + 1) + "] Timeout: No response from server.");
             }
             counter++;

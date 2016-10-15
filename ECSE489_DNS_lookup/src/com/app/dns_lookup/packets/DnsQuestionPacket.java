@@ -1,11 +1,11 @@
 package com.app.dns_lookup.packets;
 
-import com.app.dns_lookup.DnsQuery;
+import com.app.dns_lookup.DnsLookupRequest;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Random;
 
@@ -16,24 +16,30 @@ public class DnsQuestionPacket extends DnsPacket{
 
     static Random random;
 
-    public DnsQuestionPacket(DnsQuery query) {
+    public DnsQuestionPacket(DnsLookupRequest request) {
+        this.packetDataBuffer = ByteBuffer.allocate(computePacketLength(request));
         this.random = new Random(System.currentTimeMillis());
-        initPacket(query); // setup packetDataBuffer
+        initPacket(request); // setup packetDataBuffer
         try {
-            InetAddress lookupServer = InetAddress.getByAddress(query.getServerNameAsBytes());
-            this.datagramPacket = new DatagramPacket(packetDataBuffer.array(), 0, packetDataBuffer.array().length, lookupServer, Integer.valueOf(query.getPort()));
+            InetAddress lookupServer = InetAddress.getByAddress(request.getServerNameAsByteArray());
+            this.datagramPacket = new DatagramPacket(packetDataBuffer.array(), 0,
+                    packetDataBuffer.array().length, lookupServer, Integer.valueOf(request.getPort()));
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
 
+    private int computePacketLength(DnsLookupRequest request){
+        return HEADER_SIZE + 2 + request.getDomainName().length() + 4;
+    }
+
     /**
      *
-     * @param query
+     * @param request
      */
-    private void initPacket(DnsQuery query) {
+    private void initPacket(DnsLookupRequest request) {
         initPacketHeader();
-        initPacketData(query);
+        initPacketData(request);
     }
 
     /**
@@ -63,39 +69,64 @@ public class DnsQuestionPacket extends DnsPacket{
 
     /**
      *
-     * @param query
+     * @param request
      */
-    private void initPacketData(DnsQuery query) {
+    private void initPacketData(DnsLookupRequest request) {
         // write QNAME
-        List<char[]> labels = query.getDomainNameAsList();
+        List<char[]> labels = request.getDomainNameAsList();
         for(char[] label : labels){
             packetDataBuffer.put((byte)(label.length));
             for (char c : label){
                 packetDataBuffer.put((byte)c);
             }
         }
+        // write 00 to indicate end of labels
+        packetDataBuffer.put((byte)0x00);
+
         // write QTYPE (type-A, type-NS, type-MX)
-        switch(query.getRequestType()){
-            default: // write 0x0000: this should not happen
-                packetDataBuffer.put((byte)0x0);
-                packetDataBuffer.put((byte)0x0);
+        switch(request.getRequestType()){
+            default: // write 0x0001 as if A-type: this should not happen
+                packetDataBuffer.put((byte)0x00);
+                packetDataBuffer.put((byte)0x01);
                 break;
-            case "A": // write 0x001
-                packetDataBuffer.put((byte)0x0);
-                packetDataBuffer.put((byte)0x1);
+            case "A": // write 0x0001
+                packetDataBuffer.put((byte)0x00);
+                packetDataBuffer.put((byte)0x01);
                 break;
             case "NS": // write 0x0002
-                packetDataBuffer.put((byte)0x0);
-                packetDataBuffer.put((byte)0x2);
+                packetDataBuffer.put((byte)0x00);
+                packetDataBuffer.put((byte)0x02);
                 break;
             case "MX": // write 0x000f
-                packetDataBuffer.put((byte)0x0);
-                packetDataBuffer.put((byte)0xf);
+                packetDataBuffer.put((byte)0x00);
+                packetDataBuffer.put((byte)0x0f);
                 break;
         }
         // write 0x0001 to QCLASS
-        packetDataBuffer.put((byte)0x0);
-        packetDataBuffer.put((byte)0x0);
+        packetDataBuffer.put((byte)0x00);
+        packetDataBuffer.put((byte)0x01);
+    }
+
+   public String toString(){
+       String out = "";
+       String str =  bytesToHex(this.packetDataBuffer.array());
+       for (int i = 0; i < str.length() / 2; i++){
+           out += str.charAt(2*i) + "" + str.charAt(2*i+1) + " ";
+           if (i != 0 && i % 15 == 0)
+               out += "\n";
+       }
+       return out;
+   }
+
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     public DatagramPacket getDatagramPacket() {

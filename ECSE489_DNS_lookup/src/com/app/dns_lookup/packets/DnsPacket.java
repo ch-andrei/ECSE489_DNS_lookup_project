@@ -15,7 +15,6 @@ public abstract class DnsPacket {
     protected DatagramPacket datagramPacket;
 
     public DnsPacket() {
-        packetDataBuffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
         datagramPacket = null;
     }
 

@@ -1,14 +1,17 @@
 package com.app.dns_lookup;
 
+import com.app.user_interface.TextUI;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by Andrei-ch on 2016-10-14.
  */
-public class DnsQuery {
+public class DnsLookupRequest {
 
-    private static final String DEFAULT_TIMEOUT = "5";
+    private static final String DEFAULT_TIMEOUT = "500";
     private static final String DEFAULT_MAX_RETRIES = "3";
     private static final String DEFAULT_PORT = "53";
     private static final String DEFAULT_REQUEST_TYPE = "A";
@@ -23,7 +26,7 @@ public class DnsQuery {
     /**
      *
      */
-    public DnsQuery(){
+    public DnsLookupRequest(){
         timeout = DEFAULT_TIMEOUT;
         maxRetries = DEFAULT_MAX_RETRIES;
         port = DEFAULT_PORT;
@@ -36,20 +39,18 @@ public class DnsQuery {
      *
      * @return
      */
-    public byte[] getServerNameAsBytes(){
-        byte fixedServer[] = new byte[4];
+    public byte[] getServerNameAsByteArray(){
+        byte bytes[] = new byte[4];
+        List<String> items = Arrays.asList(getServerIp().split("\\."));
         int index = 0;
-        for (byte b : getServerIp().getBytes()){
-            if (b != '.'){
-                fixedServer[index++] = b;
-            }
+        for (String s : items){
+            bytes[index++] = (byte)(int)Integer.valueOf(s);
         }
-        return fixedServer;
+        return bytes;
     }
 
     /**
      *
-     * @param domainName
      * @return
      */
     public List<char[]> getDomainNameAsList(){
@@ -69,6 +70,17 @@ public class DnsQuery {
             i++;
         }
         return labels;
+    }
+
+    public String toString(){
+        String out = "";
+        out += "querying server " + getServerIp() + ", ";
+        out += "for domain name [" + getDomainName() +"], ";
+        out += "on port " + getPort() + ", ";
+        out += getRequestType() + "-type request, ";
+        out += "with " + getMaxRetries() +  " max retries, ";
+        out += "and " + getTimeout() + " timeout delay.";
+        return out;
     }
 
     public String getDomainName() {
