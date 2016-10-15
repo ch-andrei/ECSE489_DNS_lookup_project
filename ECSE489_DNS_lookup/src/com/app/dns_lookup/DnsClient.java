@@ -1,8 +1,11 @@
 package com.app.dns_lookup;
 
+import com.app.dns_lookup.packets.DnsPacket;
+import com.app.dns_lookup.packets.DnsQuestionPacket;
 import com.app.user_interface.TextUI;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 public class DnsClient {
@@ -28,11 +31,9 @@ public class DnsClient {
             throw new IOException("DNS Client missing arguments!");
         }
 
-        // TODO
         // parse arguments
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith("-")) {
-                //TODO
                 if (args[i].equals("-t")) {
                     timeout = args[i++ + 1];
                 }
@@ -114,12 +115,29 @@ public class DnsClient {
      */
     public static void performDnsLookup(DnsQuery query) throws IOException{
 
+        DnsPacket questionPacket = new DnsQuestionPacket(query);
+
         String hostname = query.getServerIp();
         int portNumber = Integer.valueOf(query.getPort());
 
         DatagramSocket socket = new DatagramSocket();
 
+        try {
+            socket.send(questionPacket.getDatagramPacket());
+        } catch (IOException ie) {
+            System.out.println("ERROR\tCould not send packet.");
+            return;
+        }
 
-        // TODO
+        byte[] answerBuffer = new byte[DnsPacket.MAX_PACKET_SIZE];
+        DatagramPacket answerPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
+        try {
+            socket.receive(answerPacket);
+        } catch (IOException ie) {
+            System.out.println("ERROR\tCould not receive packet.");
+            return;
+        }
+
+        socket.close();
     }
 }

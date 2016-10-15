@@ -1,7 +1,10 @@
-package com.app.dns_lookup;
+package com.app.dns_lookup.packets;
 
-import java.nio.ByteBuffer;
-import java.security.InvalidParameterException;
+import com.app.dns_lookup.DnsQuery;
+
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -9,18 +12,19 @@ import java.util.Random;
 /**
  * Created by Andrei-ch on 2016-10-14.
  */
-public class DnsPacket {
+public class DnsQuestionPacket extends DnsPacket{
 
     static Random random;
 
-    public static final int MAX_PACKET_SIZE = 1024;
-    public static final int HEADER_SIZE = 12;
-
-    private ByteBuffer packetData;
-
-    public DnsPacket(DnsQuery query) {
-        random = new Random(System.currentTimeMillis());
-        initPacket(query);
+    public DnsQuestionPacket(DnsQuery query) {
+        this.random = new Random(System.currentTimeMillis());
+        initPacket(query); // setup packetData
+        try {
+            InetAddress lookupServer = InetAddress.getByAddress(query.getServerIp().getBytes());
+            this.datagramPacket = new DatagramPacket(packetData.array(), 0, packetData.array().length, lookupServer, Integer.valueOf(query.getPort()));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -117,6 +121,14 @@ public class DnsPacket {
         // write 0x0001 to QCLASS
         packetData.put((byte)0x0);
         packetData.put((byte)0x0);
+    }
+
+    public DatagramPacket getDatagramPacket() {
+        return datagramPacket;
+    }
+
+    public void setDatagramPacket(DatagramPacket datagramPacket) {
+        this.datagramPacket = datagramPacket;
     }
 }
 
