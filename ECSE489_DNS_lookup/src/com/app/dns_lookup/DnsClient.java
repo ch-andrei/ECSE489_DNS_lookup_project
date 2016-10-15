@@ -16,8 +16,7 @@ public class DnsClient {
      * @return
      * @throws IOException
      */
-    public static DnsLookupRequest parseArgsForDnsQuery(String[] args) throws IOException
-    {
+    public static DnsLookupRequest parseArgsForDnsQuery(String[] args) throws IOException {
         DnsLookupRequest request = new DnsLookupRequest();
 
         String timeout = "";
@@ -79,14 +78,18 @@ public class DnsClient {
      *
      * @param request
      */
-    public static void validateDnsQuery(DnsLookupRequest request){
+    public static boolean validateDnsQuery(DnsLookupRequest request){
         // check if this is a working request (not missing anything)
+        boolean valid = true;
 
         if (request.getServerIp().equals("") || request.getDomainName().equals("")) {
             TextUI.printError(2, "There is no input for server or domain name.");
+            valid = false;
         }
 
         // TODO
+
+        return valid;
     }
 
     /**
@@ -115,16 +118,13 @@ public class DnsClient {
         int timeout = Integer.valueOf(request.getTimeout());
         socket.setSoTimeout(timeout);
 
-        // setup packet
-        DnsPacket questionPacket = new DnsQuestionPacket(request);
-
-        TextUI.print(questionPacket.toString());
-
         int counter = 0;
         boolean receieved = false;
         while (!receieved && counter < Integer.valueOf(request.getMaxRetries())) {
             // send question
             try {
+                // setup packet
+                DnsPacket questionPacket = new DnsQuestionPacket(request);
                 TextUI.print("[" + (counter + 1) + "] Sending question...");
                 socket.send(questionPacket.getDatagramPacket());
                 TextUI.print("[" + (counter + 1) + "] Sending question complete.");
@@ -143,7 +143,7 @@ public class DnsClient {
                 receieved = true;
             } catch (IOException ie) {
                 //ie.printStackTrace();
-                TextUI.print("[" + (counter + 1) + "] Timeout: No response from server.");
+                TextUI.print("[" + (counter + 1) + "] Timeout: Delayed or no response from server.");
             }
             counter++;
         }

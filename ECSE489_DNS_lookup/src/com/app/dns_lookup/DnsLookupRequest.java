@@ -79,7 +79,7 @@ public class DnsLookupRequest {
         out += "on port " + getPort() + ", ";
         out += getRequestType() + "-type request, ";
         out += "with " + getMaxRetries() +  " max retries, ";
-        out += "and " + getTimeout() + " timeout delay.";
+        out += "and " + getTimeout() + " ms timeout delay.";
         return out;
     }
 
