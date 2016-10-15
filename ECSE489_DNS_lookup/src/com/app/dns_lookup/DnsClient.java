@@ -33,6 +33,18 @@ public class DnsClient {
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith("-")) {
                 //TODO
+                if (args[i].equals("-t")) {
+                    timeout = args[i + 1];
+                }
+                else if (args[i].equals("-r")) {
+                    maxRetries = args[i + 1];
+                }
+                else if (args1[i].equals("-p")) {
+                    port = args[i + 1];
+                }
+                else if(args1[i].equals("-mx") || args1[i].equals("-ns")){
+                    requestType = args1[i].substring(1).toUpperCase();
+                }
             }
             //@ server name
             if (args[i].startsWith("@")) {
