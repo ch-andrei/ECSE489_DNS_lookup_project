@@ -87,7 +87,18 @@ public class DnsClient {
             valid = false;
         }
 
-        // TODO
+        //IP Address Validation
+        String regex = "\\b((25[0–5]|2[0–4]\\d|[01]?\\d\\d?)(\\.)){3}(25[0–5]|2[0–4]\\d|[01]?\\d\\d?)\\b";
+        if (!Pattern.matches(regex, request.getServerIp())) {
+            TextUI.printError(2, "IP address is invalid. Please enter IPv4 in @a.b.c.d format");
+            valid = false;
+        }
+        //Options must be postive integer
+        String numeric = "^\\d+$";
+        if ((!Pattern.matches(numeric, request.getTimeout())) || (!Pattern.matches(numeric, request.getMaxRetries())) || (!Pattern.matches(numeric, request.getPort()))) {
+            TextUI.printError(3, "Options [-t timeout] [-r max-retries] [-p port] can only take positive numeric values");
+            valid = false;
+        }
 
         return valid;
     }
@@ -129,7 +140,7 @@ public class DnsClient {
                 socket.send(questionPacket.getDatagramPacket());
                 TextUI.print("[" + (counter + 1) + "] Sending question complete.");
             } catch (IOException ie) {
-                System.out.println("Error: failed to send packet.");
+                TextUI.printError(2, "Failed to send packet.");
                 return;
             }
 
@@ -147,8 +158,11 @@ public class DnsClient {
             }
             counter++;
         }
-        if (!receieved)
+        if (!receieved) {
             TextUI.print("Max number of retries reached: no response from server.");
+            //TextUI.printError(4, maxRetries);
+            //TextUI.printError(2, "No response from server.");
+        }
         // close the socket
         socket.close();
     }
