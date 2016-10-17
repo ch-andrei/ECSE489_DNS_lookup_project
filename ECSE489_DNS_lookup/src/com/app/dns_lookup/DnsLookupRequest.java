@@ -39,12 +39,15 @@ public class DnsLookupRequest {
      *
      * @return
      */
-    public byte[] getServerNameAsByteArray(){
+    public byte[] getServerIpAsByteArray() throws NumberFormatException{
         byte bytes[] = new byte[4];
         List<String> items = Arrays.asList(getServerIp().split("\\."));
-        int index = 0;
+        int index = 0, val;
         for (String s : items){
-            bytes[index++] = (byte)(int)Integer.valueOf(s);
+            val = Integer.valueOf(s);
+            if (val < 0 || val > 255)
+                throw new NumberFormatException("");
+            bytes[index++] = (byte)(int)val;
         }
         return bytes;
     }

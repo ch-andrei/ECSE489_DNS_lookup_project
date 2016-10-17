@@ -1,6 +1,7 @@
 package com.app.dns_lookup.packets;
 
 import com.app.dns_lookup.DnsLookupRequest;
+import com.app.user_interface.TextUI;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -21,16 +22,19 @@ public class DnsQuestionPacket extends DnsPacket{
         this.random = new Random(System.currentTimeMillis());
         initPacket(request); // setup packetDataBuffer
         try {
-            InetAddress lookupServer = InetAddress.getByAddress(request.getServerNameAsByteArray());
+            InetAddress lookupServer = InetAddress.getByAddress(request.getServerIpAsByteArray());
             this.datagramPacket = new DatagramPacket(packetDataBuffer.array(), 0,
                     packetDataBuffer.array().length, lookupServer, Integer.valueOf(request.getPort()));
+        } catch (NumberFormatException nfe) {
+            TextUI.printError(3, "Invalid lookup format.");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
 
     private int computePacketLength(DnsLookupRequest request){
-        return HEADER_SIZE + 2 + request.getDomainName().length() + 4;
+        // header + QNAME + 1 empty byte (end of QNAME) + 4 bytes for QCLASS and QTYPE + 1 for length adjustement
+        return HEADER_SIZE + request.getDomainName().length() + 6;
     }
 
     /**

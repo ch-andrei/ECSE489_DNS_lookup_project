@@ -8,8 +8,8 @@ import java.nio.ByteBuffer;
  */
 public abstract class DnsPacket {
 
-    public static final int MAX_PACKET_SIZE = 1024;
-    public static final int HEADER_SIZE = 12;
+    public static final int MAX_PACKET_SIZE = 1024; // in bytes
+    public static final int HEADER_SIZE = 12; // in bytes
 
     protected ByteBuffer packetDataBuffer;
     protected DatagramPacket datagramPacket;
