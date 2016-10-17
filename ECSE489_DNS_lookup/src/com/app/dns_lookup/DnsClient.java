@@ -1,5 +1,6 @@
 package com.app.dns_lookup;
 
+import com.app.dns_lookup.packets.DnsAnswerPacket;
 import com.app.dns_lookup.packets.DnsPacket;
 import com.app.dns_lookup.packets.DnsQuestionPacket;
 import com.app.user_interface.TextUI;
@@ -41,6 +42,7 @@ public class DnsClient {
         socket.setSoTimeout(timeout);
 
         // loop sending packets until a response is received before timeout occurs or  {@maxRetries} number of packets sent
+        DnsPacket questionPacket, answerPacket = null;
         int counter = 0;
         boolean receieved = false;
         long startTime = System.currentTimeMillis(), endTime = startTime, deltaTime;
@@ -48,7 +50,7 @@ public class DnsClient {
             // send question
             try {
                 // setup packet
-                DnsPacket questionPacket = new DnsQuestionPacket(request);
+                questionPacket = new DnsQuestionPacket(request);
                 TextUI.print("[" + (counter + 1) + "] Sending question...");
                 socket.send(questionPacket.getDatagramPacket());
                 TextUI.print("[" + (counter + 1) + "] Sending question complete.");
@@ -59,11 +61,12 @@ public class DnsClient {
 
             // wait for response
             byte[] answerBuffer = new byte[DnsPacket.MAX_PACKET_SIZE];
-            DatagramPacket answerPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
+            DatagramPacket answerDatagramPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
             try {
                 TextUI.print("[" + (counter + 1) + "] Waiting for response...");
-                socket.receive(answerPacket);
+                socket.receive(answerDatagramPacket);
                 endTime = System.currentTimeMillis();
+                answerPacket = new DnsAnswerPacket(answerDatagramPacket);
                 TextUI.print("[" + (counter + 1) + "] Receieved response.");
                 receieved = true;
             } catch (IOException ie) {
@@ -75,11 +78,10 @@ public class DnsClient {
             deltaTime = endTime - startTime;
             TextUI.printResponseTime("" + deltaTime, "" + (counter));
 
+            // TODO : interpret answer packet and print to screen
 
         } else {
-            TextUI.print("Max number of retries reached: no response from server.");
-            //TextUI.printError(4, maxRetries);
-            //TextUI.printError(2, "No response from server.");
+            TextUI.printError(4, "" + request.getMaxRetries());
         }
         // close the socket
         socket.close();
