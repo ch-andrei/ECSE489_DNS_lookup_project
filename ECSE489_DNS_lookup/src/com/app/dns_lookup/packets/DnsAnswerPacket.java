@@ -52,22 +52,23 @@ public class DnsAnswerPacket extends DnsPacket{
             default:
                 break;
             case 0:
-                // no error
+                // no error condition
                 break;
             case 1:
                 // TODO print error message (see DNS primer document page 2-3)
+                TextUI.print("Format error: the name server was unable to interpret the query");
                 return null;
             case 2:
-                // TODO
+                TextUI.print("Server failure: the name server was unable to process this query due to a problem with the name server");
                 return null;
             case 3:
-                // TODO
+                TextUI.print("Name error: meaningful only for responses from an authoritative name server, this code signifies that the domain name referenced in the query does not exist");
                 return null;
             case 4:
-                // TODO
+                TextUI.print("Not implemented: the name server does not support the requested kind of query");
                 return null;
             case 5:
-                // TODO
+                TextUI.print("Refused: the name server refuses to perform the requested operation for policy reasons");
                 return null;
         }
 
