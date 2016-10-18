@@ -34,8 +34,8 @@ public class TextUI {
     }
 
     //MX records
-    public static void printRecrodsMX(String request_type, String alias, String pref, int seconds_can_cache, String auth) {
-        System.out.println(request_type + " \t " + alias + " \t " + pref + " \t " + seconds_can_cache + " \t " + auth);
+    public static void printRecrodsMX(String request_type, String aliaspref, int seconds_can_cache, String auth) {
+        System.out.println(request_type + " \t " + aliaspref + " \t " + seconds_can_cache + " \t " + auth);
     }
 
     //When response contains records in Additional Section

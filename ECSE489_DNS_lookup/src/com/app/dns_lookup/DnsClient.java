@@ -1,6 +1,7 @@
 package com.app.dns_lookup;
 
 import com.app.dns_lookup.packets.DnsAnswerPacket;
+import com.app.dns_lookup.packets.DnsAnswerSection;
 import com.app.dns_lookup.packets.DnsPacket;
 import com.app.dns_lookup.packets.DnsQuestionPacket;
 import com.app.user_interface.TextUI;
@@ -8,6 +9,7 @@ import com.app.user_interface.TextUI;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class DnsClient {
@@ -79,25 +81,29 @@ public class DnsClient {
             deltaTime = endTime - startTime;
             TextUI.printResponseTime("" + deltaTime, "" + (counter));
             TextUI.printAnswerSection("" + (answerPacket.parseAncount()));
-            String out[] = answerPacket.parsePacketInfo();
-            //for (String s : out){
-            //    TextUI.print("\n" + s);
-            //}
-            if (out != null) {
-                if (out[0].equals("A")) {
-                    TextUI.printRecordsA(out[0], out[2], Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                } else if (out[0].equals("NS") || out[0].equals("CNAME")) {
-                    TextUI.printRecordsCNAMEorNS(out[0], out[2], Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                } else if (out[0].equals("MX")) {
-                    // TODO
-                    TextUI.printRecrodsMX(out[0], out[2], out[2] ,Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                } else {
-                    // TODO
-                    // print some error for unexpected type; shouldnt happen
+            if(answerPacket.parseAncount() == 0){
+                TextUI.printError(1,"");
+            } else {
+                List<DnsAnswerSection> answers = answerPacket.parsePacketInfo();
+                for (DnsAnswerSection answerSection : answers) {
+                    if (answerSection != null) {
+                        if (answerSection.getType().equals("A")) {
+                            TextUI.printRecordsA("A", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                        } else if (answerSection.getType().equals("NS") || answerSection.getType().equals("CNAME")) {
+                            TextUI.printRecordsCNAMEorNS(answerSection.getType(), answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                        } else if (answerSection.getType().equals("MX")) {
+                            TextUI.printRecrodsMX("MX", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                        } else {
+                            // TODO
+                            // print some error for unexpected type; shouldnt happen
+                        }
+                    }
                 }
             }
             TextUI.printAdditionalSection("" + answerPacket.parseArcount());
-
+            if(answerPacket.parseArcount() == 0){
+                TextUI.printError(1,"");
+            }
         } else {
             TextUI.printError(4, "" + request.getMaxRetries());
         }

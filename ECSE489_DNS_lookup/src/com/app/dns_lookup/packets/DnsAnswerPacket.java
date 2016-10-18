@@ -4,6 +4,8 @@ import com.app.user_interface.TextUI;
 
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Andrei on 2016-10-17.
@@ -43,9 +45,9 @@ public class DnsAnswerPacket extends DnsPacket{
         return ancount_buf.getShort(0);
     }
 
-    public String[] parsePacketInfo(){
+    public List<DnsAnswerSection> parsePacketInfo(){
         // init array for output
-        String[] out = new String[3];
+        List<DnsAnswerSection> out = new ArrayList<>();
 
         byte rcode = parseRcode();
         switch (rcode){
@@ -55,20 +57,19 @@ public class DnsAnswerPacket extends DnsPacket{
                 // no error condition
                 break;
             case 1:
-                // TODO print error message (see DNS primer document page 2-3)
-                TextUI.print("Format error: the name server was unable to interpret the query");
+                TextUI.printError(2, "Format error: the name server was unable to interpret the query");
                 return null;
             case 2:
-                TextUI.print("Server failure: the name server was unable to process this query due to a problem with the name server");
+                TextUI.printError(2, "Server failure: the name server was unable to process this query due to some internal problem");
                 return null;
             case 3:
-                TextUI.print("Name error: meaningful only for responses from an authoritative name server, this code signifies that the domain name referenced in the query does not exist");
+                TextUI.printError(1, "Name error: domain name referenced in the query does not exist (meaningful only for responses from an authoritative name server) ");
                 return null;
             case 4:
-                TextUI.print("Not implemented: the name server does not support the requested kind of query");
+                TextUI.printError(2, "Not implemented: the name server does not support the requested kind of query");
                 return null;
             case 5:
-                TextUI.print("Refused: the name server refuses to perform the requested operation for policy reasons");
+                TextUI.printError(2, "Refused: the name server refuses to perform the requested operation for policy reasons");
                 return null;
         }
 
@@ -77,76 +78,147 @@ public class DnsAnswerPacket extends DnsPacket{
         }
 
         int offset = HEADER_SIZE;
-        // find the end of NAME section
-        while (packetDataBuffer.array()[offset] != 0x00 && offset < MAX_PACKET_SIZE ){
+        // find end of QNAME
+        while (packetDataBuffer.array()[offset] != 0x00 && offset < MAX_LABEL_LENGTH) {
             offset++;
         }
-        // TextUI.print("offset " + offset);
+        offset++;
 
-        // get TYPE
-        byte type = packetDataBuffer.array()[offset+2];
-        if (type == 0x01)
-            out[0] = "A";
-        else if (type == 0x02)
-            out[0] = "NS";
-        else if (type == 0x0f)
-            out[0] = "MX";
-        else if (type == 0x05)
-            out[0] = "CNAME";
-        else {
-            TextUI.printError(5, "Unexpected response TYPE {" + bytesToHex(new byte[] {type}) + "}");
-        }
+        // add 4 bytes for QTYPE and QCLASS
+        offset += 4;
 
-        // check CLASS
-        byte pclass = packetDataBuffer.array()[offset+4];
-        if (pclass != 0x01)
-            TextUI.printError(5, "Unexpected response CLASS (not 0x0001): {" + bytesToHex(new byte[] {type}) + "}");
+        //TextUI.print("start offset " + offset);
 
-        // get TTL
-        byte[] ttl = new byte[4];
-        for (int i = 0; i < 4; i++){
-            ttl[i] = packetDataBuffer.array()[offset+11+i];
-        }
-        ByteBuffer ttl_buf = ByteBuffer.wrap(ttl);
-        // need to get unsigned value
-        out[1] = "" + ((long) ttl_buf.getInt(0) & 0xffffffffL);
+        int parsed = 0;
+        while (parsed < parseAncount()) {
+            // set up an answer
+            DnsAnswerSection answer = new DnsAnswerSection();
 
-        // get RDATA
-        byte rdlength[] = new byte[] {packetDataBuffer.array()[offset+15], packetDataBuffer.array()[offset+16]};
-        ByteBuffer rdlength_buf = ByteBuffer.wrap(rdlength);
-        int RDLENGTH = (rdlength_buf.getShort() & 0xffff);
-        String RDATA = "";
-        if (out[0].equals("A")){
-            // get ip
-            byte[] ip = new byte[4];
-            int ip_offset = offset + 17;
-            for (int i = 0; i < 4; i++){
-                ip[i] = packetDataBuffer.array()[ip_offset+i];
-            }
-            out[2] = bytesIpToString(ip);
-        } else if (out[0].equals("NS") || out[0].equals("CNAME")){
-            int label_offset = offset + 17;
-            String str = "";
-            char c;
-            while ((c = (char)packetDataBuffer.array()[label_offset]) != 0){
-                int counter = c;
-                while (counter-- > 0){
-                    str += c;
+            //TextUI.print("[" + parsed + "]b4 name: " + offset);
+            // find the end of NAME section
+            if (checkReference(offset)){
+                // if reference
+                offset += 2;
+            } else {
+                // if actual name (structure similar to QNAME and RDATA
+                while (packetDataBuffer.array()[offset] != 0x00 && offset < MAX_LABEL_LENGTH) {
+                    offset++;
                 }
-                str += ".";
-                label_offset++;
+                offset++;
             }
-            out[2] = str;
-        } else if (out[0].equals("MX")){
+            //TextUI.print("[" + parsed + "]after name: " + offset);
 
-        }  else {
-            TextUI.printError(5, "Could not interpret answer packet.");
+            // get TYPE
+            byte type = packetDataBuffer.array()[offset+1];
+            if (type == 0x01)
+                answer.setType("A");
+            else if (type == 0x02)
+                answer.setType("NS");
+            else if (type == 0x0f)
+                answer.setType("MX");
+            else if (type == 0x05)
+                answer.setType("CNAME");
+            else {
+                TextUI.printError(5, "Unexpected response TYPE {" + bytesToHex(new byte[]{type}) + "}");
+            }
+
+            // check CLASS
+            offset += 2;
+            byte pclass = packetDataBuffer.array()[offset+1];
+            if (pclass != 0x01)
+                TextUI.printError(5, "Unexpected response CLASS (not 0x0001): {" + bytesToHex(new byte[]{type}) + "}");
+
+            // get TTL
+            offset += 2;
+            byte[] ttl = new byte[4];
+            for (int i = 0; i < 4; i++) {
+                ttl[i] = packetDataBuffer.array()[offset + i];
+            }
+            ByteBuffer temp = ByteBuffer.wrap(ttl);
+            // need to get unsigned value
+            answer.setTtl("" + ((long) temp.getInt(0) & 0xffffffffL));
+
+            // get RDATA
+            offset += 4;
+            byte rdlength[] = new byte[]{packetDataBuffer.array()[offset], packetDataBuffer.array()[offset + 1]};
+            temp = ByteBuffer.wrap(rdlength);
+            int RDLENGTH = (temp.getShort() & 0xffff);
+            //TextUI.print("rdlen" + RDLENGTH);
+
+            offset += 2;
+            String RDATA = "";
+            if (answer.getType().equals("A")) {
+                // get ip
+                byte[] ip = new byte[4];
+                for (int i = 0; i < 4; i++) {
+                    ip[i] = packetDataBuffer.array()[offset++];
+                }
+                answer.setRdata(bytesIpToString(ip));
+            } else if (answer.getType().equals("NS") || answer.getType().equals("CNAME")) {
+                int[] offset_ptr = new int[]{offset};
+                String str = recursiveParse(offset_ptr);
+                str = str.substring(0, str.length()-1); // remove last .
+                offset = offset_ptr[0];
+                answer.setRdata(str);
+            } else if (answer.getType().equals("MX")) {
+                // get PREFERENCE field
+                String str = "" + packetDataBuffer.getShort(offset);
+                offset += 2;
+                // get EXCHANGE field
+                int[] offset_ptr = new int[]{offset};
+                str += recursiveParse(offset_ptr);
+                str = str.substring(0, str.length()-1); // remove last .
+                offset = offset_ptr[0];
+                answer.setRdata(str);
+            } else {
+                TextUI.printError(5, "Could not interpret answer packet.");
+            }
+            out.add(answer);
+            parsed++;
         }
-        //for (int i = 0; i < RDLENGTH; i++){
-//
-        //}
 
         return out;
+    }
+
+    public String recursiveParse(int[] offset){
+        //TextUI.print("**************\nrec parse starting offset " + offset[0]);
+        String str = "";
+        int label_offset = offset[0];
+        byte b;
+        if ((b = packetDataBuffer.array()[label_offset]) == 0) {
+            //TextUI.print("REACHED THE END\n");
+            offset[0] += 1;
+            return str;
+        } else if (checkReference(label_offset)){
+            int temp_offset = (packetDataBuffer.getShort(label_offset) & 0x3fff);
+            //TextUI.print("TEMPORARY OFFSET: " + temp_offset);
+            int[] temp = new int[]{temp_offset};
+            str += recursiveParse(temp);
+            label_offset += 2;
+            offset[0] = label_offset;
+            return str;
+        } else {
+            int counter = b;
+            //TextUI.print("name counter " + counter + "; offset " + label_offset);
+            while (counter-- > 0) {
+                b = packetDataBuffer.array()[++label_offset];
+                str += (char)b;
+            }
+            str += ".";
+            label_offset++;
+            offset[0] = label_offset;
+            return str + recursiveParse(offset);
+        }
+    }
+
+    public boolean checkReference(int offset){
+        byte nameStart = packetDataBuffer.array()[offset];
+        //TextUI.print("ref check BYTE " + bytesToHex(new byte[] {nameStart}));
+        if ((nameStart & (byte)0b11000000) == (byte)0b11000000) {
+            //TextUI.print("found reference");
+            return true;
+        }
+        return false;
     }
 
     public String bytesIpToString(byte[] bytes){
