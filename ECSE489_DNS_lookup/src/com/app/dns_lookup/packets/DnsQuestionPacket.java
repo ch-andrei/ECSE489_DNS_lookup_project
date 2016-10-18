@@ -111,35 +111,16 @@ public class DnsQuestionPacket extends DnsPacket{
         packetDataBuffer.put((byte)0x01);
     }
 
-   public String toString(){
+   public String toString() {
        String out = "";
-       String str =  bytesToHex(this.packetDataBuffer.array());
-       for (int i = 0; i < str.length() / 2; i++){
-           out += str.charAt(2*i) + "" + str.charAt(2*i+1) + " ";
+       String str = bytesToHex(this.packetDataBuffer.array());
+       for (int i = 0; i < str.length() / 2; i++) {
+           out += str.charAt(2 * i) + "" + str.charAt(2 * i + 1) + " ";
            if (i != 0 && i % 15 == 0)
                out += "\n";
        }
        return out;
    }
-
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = hexArray[v >>> 4];
-            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-
-    public DatagramPacket getDatagramPacket() {
-        return datagramPacket;
-    }
-
-    public void setDatagramPacket(DatagramPacket datagramPacket) {
-        this.datagramPacket = datagramPacket;
-    }
 }
 
 

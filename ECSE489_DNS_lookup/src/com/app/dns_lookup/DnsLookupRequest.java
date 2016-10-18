@@ -2,6 +2,7 @@ package com.app.dns_lookup;
 
 import com.app.user_interface.TextUI;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +34,60 @@ public class DnsLookupRequest {
         requestType = DEFAULT_REQUEST_TYPE;
         serverIp = "";
         domainName = "";
+    }
+
+    public DnsLookupRequest(String[] args) throws IOException{
+        this();
+        init(args);
+    }
+
+    private void init(String[] args) throws IOException{
+        String timeout = "";
+        String maxRetries = "";
+        String port = "";
+        String requestType = "";
+        String serverIp = "";
+        String domainName = "";
+        if (args.length < 3) {
+            throw new IOException("DNS Client missing arguments!");
+        }
+        // parse arguments
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].contains("-t")) {
+                timeout += args[i+1];
+            }
+            else if (args[i].contains("-r")) {
+                maxRetries += args[i+1];
+            }
+            else if (args[i].contains("-p")) {
+                port += args[i+1];
+            }
+            else if(args[i].contains("-mx") || args[i].contains("-ns")){
+                requestType += args[i].substring(1).toUpperCase();
+            }
+            //@ server name
+            else if (args[i].startsWith("@")) {
+                serverIp += args[i].substring(1);
+                if (i == args.length - 1) {
+                    TextUI.printError(2, "Domain name is missing!" );
+                }
+                else {
+                    domainName += args[i + 1];
+                }
+            }
+        }
+        if (!timeout.equals(""))
+            this.setTimeout(timeout);
+        if (!maxRetries.equals(""))
+            this.setMaxRetries(maxRetries);
+        if (!port.equals(""))
+            this.setPort(port);
+        if (!requestType.equals(""))
+            this.setRequestType(requestType);
+        if (!serverIp.equals(""))
+            this.setServerIp(serverIp);
+        if (!domainName.equals(""))
+            this.setDomainName(domainName);
     }
 
     /**

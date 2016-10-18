@@ -15,7 +15,7 @@ public class TextUI {
 
     //When a valid response is received
     public static void printResponseTime(String time, String num_retries) {
-        System.out.println("Response received after " + time + " milliseconds (" + num_retries + " retries)");
+        System.out.println("Response received after " + time + " milliseconds (" + num_retries + new String((Integer.valueOf(num_retries) > 1) ? " retries)." : " retry)."));
     }
 
     //When the response contains records in the Answer Section
@@ -25,17 +25,17 @@ public class TextUI {
 
     //A (IP address) records
     public static void printRecordsA(String request_type, String ip_addr, int seconds_can_cache, String auth) {
-        System.out.println("IP " + "\t" + ip_addr + "\t" + seconds_can_cache + "\t" + auth);
+        System.out.println("IP " + " \t " + ip_addr + " \t " + seconds_can_cache + " \t " + auth);
     }
 
     //CNAME, NS records
     public static void printRecordsCNAMEorNS(String request_type, String alias, int seconds_can_cache, String auth) {
-        System.out.println(request_type + "\t" + alias + "\t" + seconds_can_cache + "\t" + auth);
+        System.out.println(request_type + " \t " + alias + " \t " + seconds_can_cache + " \t " + auth);
     }
 
     //MX records
     public static void printRecrodsMX(String request_type, String alias, String pref, int seconds_can_cache, String auth) {
-        System.out.println(request_type + "\t" + alias + "\t" + pref + "\t" + seconds_can_cache + "\t" + auth);
+        System.out.println(request_type + " \t " + alias + " \t " + pref + " \t " + seconds_can_cache + " \t " + auth);
     }
 
     //When response contains records in Additional Section
@@ -47,27 +47,23 @@ public class TextUI {
         switch(error) {
             //If no record found
             case 1:
-                System.out.println("NOTFOUND");
+                System.out.println("NOTFOUND \t " + description);
                 break;
             //any error occur during execution
             case 2:
-                System.out.println("ERROR\t" + description);
-                System.exit(0);
+                System.out.println("ERROR \t " + description);
                 break;
             //Be specific with the error messages input syntax
             case 3:
                 System.out.println("ERROR\tIncorrect input syntax: " + description);
-                System.exit(0);
                 break;
             //Be specific with the error messages max retries
             case 4:
                 System.out.println("ERROR\tMaximum number of retries " + description + " exceeded");
-                System.exit(0);
                 break;
             //Be specific with the error messages unexpected response
             case 5:
-                System.out.println("ERROR\tUnexpected response " + description);
-                System.exit(0);
+                System.out.println("ERROR\tUnexpected response: " + description);
                 break;
         }
     }

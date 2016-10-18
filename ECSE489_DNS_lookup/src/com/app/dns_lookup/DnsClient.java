@@ -20,7 +20,7 @@ public class DnsClient {
     public static void performDnsLookup(String[] args) throws IOException{
         DnsLookupRequest request;
         try {
-            request = parseArgsForDnsQuery(args);
+            request = new DnsLookupRequest(args);
             if (validateDnsQuery(request)) {
                 printRequest(request);
                 performDnsLookup(request);
@@ -42,7 +42,8 @@ public class DnsClient {
         socket.setSoTimeout(timeout);
 
         // loop sending packets until a response is received before timeout occurs or  {@maxRetries} number of packets sent
-        DnsPacket questionPacket, answerPacket = null;
+        DnsPacket questionPacket;
+        DnsAnswerPacket answerPacket = null;
         int counter = 0;
         boolean receieved = false;
         long startTime = System.currentTimeMillis(), endTime = startTime, deltaTime;
@@ -77,76 +78,28 @@ public class DnsClient {
         if (receieved) {
             deltaTime = endTime - startTime;
             TextUI.printResponseTime("" + deltaTime, "" + (counter));
+            TextUI.printAnswerSection("" + (answerPacket.parseAncount()));
+            String out[] = answerPacket.parsePacketInfo();
+            //for (String s : out){
+            //    TextUI.print("\n" + s);
+            //}
+            if (out[0].equals("A")) {
+                TextUI.printRecordsA(out[0], out[2], Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+            } else if (out[0].equals("NS")) {
 
-            // TODO : interpret answer packet and print to screen
+            } else if (out[0].equals("MX")){
+
+            } else if (out[0].equals("CNAME")){
+
+            } else {
+                // TODO
+            }
 
         } else {
             TextUI.printError(4, "" + request.getMaxRetries());
         }
         // close the socket
         socket.close();
-    }
-
-    /**
-     *
-     * @param args
-     * @return
-     * @throws IOException
-     */
-    public static DnsLookupRequest parseArgsForDnsQuery(String[] args) throws IOException {
-        DnsLookupRequest request = new DnsLookupRequest();
-
-        String timeout = "";
-        String maxRetries = "";
-        String port = "";
-        String requestType = "";
-        String serverIp = "";
-        String domainName = "";
-
-        if (args.length < 3) {
-            throw new IOException("DNS Client missing arguments!");
-        }
-
-        // parse arguments
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].contains("-t")) {
-                timeout += args[i+1];
-            }
-            else if (args[i].contains("-r")) {
-                maxRetries += args[i+1];
-            }
-            else if (args[i].contains("-p")) {
-                port += args[i+1];
-            }
-            else if(args[i].contains("-mx") || args[i].contains("-ns")){
-                requestType += args[i].substring(1).toUpperCase();
-            }
-            //@ server name
-            else if (args[i].startsWith("@")) {
-                serverIp += args[i].substring(1);
-                if (i == args.length - 1) {
-                    TextUI.printError(2, "Domain name is missing!" );
-                }
-                else {
-                    domainName += args[i + 1];
-                }
-            }
-        }
-
-        if (!timeout.equals(""))
-            request.setTimeout(timeout);
-        if (!maxRetries.equals(""))
-            request.setMaxRetries(maxRetries);
-        if (!port.equals(""))
-            request.setPort(port);
-        if (!requestType.equals(""))
-            request.setRequestType(requestType);
-        if (!serverIp.equals(""))
-            request.setServerIp(serverIp);
-        if (!domainName.equals(""))
-            request.setDomainName(domainName);
-
-        return request;
     }
 
     /**

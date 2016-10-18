@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
  */
 public abstract class DnsPacket {
 
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
     public static final int MAX_PACKET_SIZE = 1024; // in bytes
     public static final int HEADER_SIZE = 12; // in bytes
 
@@ -32,6 +33,16 @@ public abstract class DnsPacket {
 
     public void setDatagramPacket(DatagramPacket datagramPacket) {
         this.datagramPacket = datagramPacket;
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int i = 0; i < bytes.length; i++ ) {
+            int index = bytes[i] & 0xFF;
+            hexChars[i * 2] = hexArray[index >>> 4];
+            hexChars[i * 2 + 1] = hexArray[index & 0x0F];
+        }
+        return new String(hexChars);
     }
 }
 
