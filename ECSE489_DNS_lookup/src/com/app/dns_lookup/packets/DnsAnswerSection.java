@@ -5,6 +5,7 @@ package com.app.dns_lookup.packets;
  */
 public class DnsAnswerSection {
 
+    private int segment;
     private String name;
     private String type;
     private String aclass;
@@ -12,13 +13,22 @@ public class DnsAnswerSection {
     private String rdlength;
     private String rdata;
 
-    public DnsAnswerSection(){
+    public DnsAnswerSection(int segment) {
         name = "";
         type = "";
         aclass = "";
         ttl = "";
         rdlength = "";
         rdata = "";
+        this.segment = segment;
+    }
+
+    public int getSegment() {
+        return segment;
+    }
+
+    public void setSegment(int segment) {
+        this.segment = segment;
     }
 
     public String getName() {

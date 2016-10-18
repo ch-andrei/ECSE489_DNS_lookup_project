@@ -43,6 +43,11 @@ public class TextUI {
         System.out.println("***Additional Section (" + num_additional + " records)***");
     }
 
+    //When response contains records in Additional Section
+    public static void printAuthoritySection(String num_authority) {
+        System.out.println("***Authority Section (" + num_authority + " records)***");
+    }
+
     public static void printError(int error, String description) {
         switch(error) {
             //If no record found

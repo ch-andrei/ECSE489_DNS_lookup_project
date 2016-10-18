@@ -80,35 +80,75 @@ public class DnsClient {
         if (receieved) {
             deltaTime = endTime - startTime;
             TextUI.printResponseTime("" + deltaTime, "" + (counter));
-            TextUI.printAnswerSection("" + (answerPacket.parseAncount()));
-            if(answerPacket.parseAncount() == 0){
-                TextUI.printError(1,"");
-            } else {
-                List<DnsAnswerSection> answers = answerPacket.parsePacketInfo();
-                for (DnsAnswerSection answerSection : answers) {
-                    if (answerSection != null) {
-                        if (answerSection.getType().equals("A")) {
-                            TextUI.printRecordsA("A", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                        } else if (answerSection.getType().equals("NS") || answerSection.getType().equals("CNAME")) {
-                            TextUI.printRecordsCNAMEorNS(answerSection.getType(), answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                        } else if (answerSection.getType().equals("MX")) {
-                            TextUI.printRecrodsMX("MX", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                        } else {
-                            // TODO
-                            // print some error for unexpected type; shouldnt happen
-                        }
-                    }
-                }
-            }
-            TextUI.printAdditionalSection("" + answerPacket.parseArcount());
-            if(answerPacket.parseArcount() == 0){
-                TextUI.printError(1,"");
-            }
+            printAnswers(answerPacket);
         } else {
             TextUI.printError(4, "" + request.getMaxRetries());
         }
         // close the socket
         socket.close();
+    }
+
+    /**
+     * 
+     * @param answerPacket
+     */
+    public static void printAnswers(DnsAnswerPacket answerPacket){
+        List<DnsAnswerSection> answers = answerPacket.parsePacketInfo();
+        printAnswers(answerPacket, answers);
+    }
+
+    /**
+     *
+     * @param answerPacket
+     * @param answers
+     */
+    public static void printAnswers(DnsAnswerPacket answerPacket, List<DnsAnswerSection> answers){
+        for (int segment = 0; segment < 3; segment++){
+            int count;
+            switch (segment) {
+                default:
+                    count = 0;
+                    break;
+                case 0:
+                    TextUI.printAnswerSection("" + (answerPacket.parseAncount()));
+                    count = answerPacket.parseAncount();
+                    break;
+                case 1:
+                    TextUI.printAuthoritySection("" + answerPacket.parseAuthcount());
+                    count = answerPacket.parseAuthcount();
+                    break;
+                case 2:
+                    TextUI.printAdditionalSection("" + answerPacket.parseArcount());
+                    count = answerPacket.parseArcount();
+                    break;
+            }
+            if (count == 0)
+                TextUI.printError(1,"");
+            else
+                printSegment(answers, 2, answerPacket);
+        }
+    }
+
+    /**
+     *
+     * @param answers
+     * @param segment
+     * @param answerPacket
+     */
+    public static void printSegment(List<DnsAnswerSection> answers, int segment, DnsAnswerPacket answerPacket){
+        for (DnsAnswerSection answerSection : answers) {
+            if (answerSection != null && answerSection.getSegment() == 0) {
+                if (answerSection.getType().equals("A")) {
+                    TextUI.printRecordsA("A", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                } else if (answerSection.getType().equals("NS") || answerSection.getType().equals("CNAME")) {
+                    TextUI.printRecordsCNAMEorNS(answerSection.getType(), answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                } else if (answerSection.getType().equals("MX")) {
+                    TextUI.printRecrodsMX("MX", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                } else {
+                    TextUI.printError(5, "answer segment type not A, NS, CNAME or MX.");
+                }
+            }
+        }
     }
 
     /**

@@ -39,11 +39,19 @@ public class DnsAnswerPacket extends DnsPacket{
         return ancount_buf.getShort(0);
     }
 
+    public int parseAuthcount(){
+        byte[] ancount = new byte[] {packetDataBuffer.array()[8], packetDataBuffer.array()[9]};
+        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
+        return ancount_buf.getShort(0);
+    }
+
     public int parseArcount(){
         byte[] ancount = new byte[] {packetDataBuffer.array()[10], packetDataBuffer.array()[11]};
         ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
         return ancount_buf.getShort(0);
     }
+
+
 
     public List<DnsAnswerSection> parsePacketInfo(){
         // init array for output
@@ -89,10 +97,18 @@ public class DnsAnswerPacket extends DnsPacket{
 
         //TextUI.print("start offset " + offset);
 
+        int totalCount = parseAncount() + parseArcount() + parseAuthcount();
         int parsed = 0;
-        while (parsed < parseAncount()) {
+        while (parsed < totalCount) {
             // set up an answer
-            DnsAnswerSection answer = new DnsAnswerSection();
+            DnsAnswerSection answer;
+            if (parsed < parseAncount()){
+                answer = new DnsAnswerSection(0);
+            } else if( parsed < parseArcount()){
+                answer = new DnsAnswerSection(1);
+            } else {
+                answer = new DnsAnswerSection(2);
+            }
 
             //TextUI.print("[" + parsed + "]b4 name: " + offset);
             // find the end of NAME section
