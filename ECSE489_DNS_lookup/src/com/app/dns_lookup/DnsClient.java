@@ -83,17 +83,20 @@ public class DnsClient {
             //for (String s : out){
             //    TextUI.print("\n" + s);
             //}
-            if (out[0].equals("A")) {
-                TextUI.printRecordsA(out[0], out[2], Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-            } else if (out[0].equals("NS")) {
-
-            } else if (out[0].equals("MX")){
-
-            } else if (out[0].equals("CNAME")){
-
-            } else {
-                // TODO
+            if (out != null) {
+                if (out[0].equals("A")) {
+                    TextUI.printRecordsA(out[0], out[2], Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                } else if (out[0].equals("NS") || out[0].equals("CNAME")) {
+                    TextUI.printRecordsCNAMEorNS(out[0], out[2], Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                } else if (out[0].equals("MX")) {
+                    // TODO
+                    TextUI.printRecrodsMX(out[0], out[2], out[2] ,Integer.valueOf(out[1]), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                } else {
+                    // TODO
+                    // print some error for unexpected type; shouldnt happen
+                }
             }
+            TextUI.printAdditionalSection("" + answerPacket.parseArcount());
 
         } else {
             TextUI.printError(4, "" + request.getMaxRetries());

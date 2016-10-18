@@ -48,7 +48,7 @@ public class DnsLookupRequest {
         String requestType = "";
         String serverIp = "";
         String domainName = "";
-        if (args.length < 3) {
+        if (args.length < 2) {
             throw new IOException("DNS Client missing arguments!");
         }
         // parse arguments
@@ -92,7 +92,7 @@ public class DnsLookupRequest {
 
     /**
      *
-     * @return
+     * @returnohhh
      */
     public byte[] getServerIpAsByteArray() throws NumberFormatException{
         byte bytes[] = new byte[4];

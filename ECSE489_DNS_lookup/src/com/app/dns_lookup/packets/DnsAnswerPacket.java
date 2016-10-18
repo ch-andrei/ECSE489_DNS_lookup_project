@@ -37,6 +37,12 @@ public class DnsAnswerPacket extends DnsPacket{
         return ancount_buf.getShort(0);
     }
 
+    public int parseArcount(){
+        byte[] ancount = new byte[] {packetDataBuffer.array()[10], packetDataBuffer.array()[11]};
+        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
+        return ancount_buf.getShort(0);
+    }
+
     public String[] parsePacketInfo(){
         // init array for output
         String[] out = new String[3];
@@ -46,22 +52,23 @@ public class DnsAnswerPacket extends DnsPacket{
             default:
                 break;
             case 0:
+                // no error
                 break;
             case 1:
                 // TODO print error message (see DNS primer document page 2-3)
-                break;
+                return null;
             case 2:
                 // TODO
-                break;
+                return null;
             case 3:
                 // TODO
-                break;
+                return null;
             case 4:
                 // TODO
-                break;
+                return null;
             case 5:
                 // TODO
-                break;
+                return null;
         }
 
         if (!parseRecursive()){
@@ -111,17 +118,27 @@ public class DnsAnswerPacket extends DnsPacket{
         if (out[0].equals("A")){
             // get ip
             byte[] ip = new byte[4];
+            int ip_offset = offset + 17;
             for (int i = 0; i < 4; i++){
-                ip[i] = packetDataBuffer.array()[offset+17+i];
+                ip[i] = packetDataBuffer.array()[ip_offset+i];
             }
             out[2] = bytesIpToString(ip);
-        } else if (out[0].equals("NS")){
-
+        } else if (out[0].equals("NS") || out[0].equals("CNAME")){
+            int label_offset = offset + 17;
+            String str = "";
+            char c;
+            while ((c = (char)packetDataBuffer.array()[label_offset]) != 0){
+                int counter = c;
+                while (counter-- > 0){
+                    str += c;
+                }
+                str += ".";
+                label_offset++;
+            }
+            out[2] = str;
         } else if (out[0].equals("MX")){
 
-        } else if (out[0].equals("CNAME")){
-
-        } else {
+        }  else {
             TextUI.printError(5, "Could not interpret answer packet.");
         }
         //for (int i = 0; i < RDLENGTH; i++){
