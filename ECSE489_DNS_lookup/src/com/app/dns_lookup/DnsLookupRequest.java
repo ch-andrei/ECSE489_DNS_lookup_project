@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class DnsLookupRequest {
 
-    private static final String DEFAULT_TIMEOUT = "500";
+    private static final String DEFAULT_TIMEOUT = "5000";
     private static final String DEFAULT_MAX_RETRIES = "3";
     private static final String DEFAULT_PORT = "53";
     private static final String DEFAULT_REQUEST_TYPE = "A";
