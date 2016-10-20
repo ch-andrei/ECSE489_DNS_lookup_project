@@ -81,7 +81,7 @@ public class DnsClient {
         }
         if (receieved) {
             deltaTime = endTime - startTime;
-            TextUI.printResponseTime("" + deltaTime, "" + (counter));
+            TextUI.printResponseTime("" + deltaTime, "" + (counter-1));
             printAnswers(answerPacket);
         } else {
             TextUI.printError(4, "" + request.getMaxRetries());
