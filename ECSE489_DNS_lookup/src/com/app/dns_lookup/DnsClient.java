@@ -7,6 +7,7 @@ import com.app.dns_lookup.packets.DnsQuestionPacket;
 import com.app.user_interface.TextUI;
 
 import javax.swing.text.html.parser.TagElement;
+import javax.xml.soap.Text;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -50,7 +51,7 @@ public class DnsClient {
         int counter = 0;
         boolean receieved = false;
         long startTime = System.currentTimeMillis(), endTime = startTime, deltaTime;
-        while (!receieved && counter < Integer.valueOf(request.getMaxRetries())) {
+        while (!receieved && counter < (Integer.valueOf(request.getMaxRetries())+1)) {
             // send question
             try {
                 // setup packet
