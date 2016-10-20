@@ -56,11 +56,11 @@ public class DnsClient {
             try {
                 // setup packet
                 questionPacket = new DnsQuestionPacket(request);
-                //TextUI.print("[" + (counter + 1) + "] Sending question...");
+                TextUI.print("[" + (counter + 1) + "] Sending question...");
                 socket.send(questionPacket.getDatagramPacket());
-                //TextUI.print("[" + (counter + 1) + "] Sending question complete.");
+                TextUI.print("[" + (counter + 1) + "] Sending question complete.");
             } catch (IOException ie) {
-               //TextUI.printError(2, "Failed to send packet.");
+               TextUI.printError(2, "Failed to send packet.");
                 return;
             }
 
@@ -68,14 +68,14 @@ public class DnsClient {
             byte[] answerBuffer = new byte[DnsPacket.MAX_PACKET_SIZE];
             DatagramPacket answerDatagramPacket = new DatagramPacket(answerBuffer, answerBuffer.length);
             try {
-                //TextUI.print("[" + (counter + 1) + "] Waiting for response...");
+                TextUI.print("[" + (counter + 1) + "] Waiting for response...");
                 socket.receive(answerDatagramPacket);
                 endTime = System.currentTimeMillis();
                 answerPacket = new DnsAnswerPacket(answerDatagramPacket);
-                //TextUI.print("[" + (counter + 1) + "] Receieved response.");
+                TextUI.print("[" + (counter + 1) + "] Receieved response.");
                 receieved = true;
             } catch (IOException ie) {
-                //TextUI.print("[" + (counter + 1) + "] Timeout: Delayed or no response from server.");
+                TextUI.print("[" + (counter + 1) + "] Timeout: Delayed or no response from server.");
             }
             counter++;
         }
