@@ -1,6 +1,7 @@
 package com.app;
 
 import com.app.dns_lookup.DnsLookup;
+import com.app.user_interface.TextUI;
 
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ public class DnsClient {
         try {
             DnsLookup.performDnsLookup(args);
         } catch (IOException e) {
+            TextUI.printError(2,"Caught some COMPLETELY UNEXPECTED exception. Printing stack trace!");
             e.printStackTrace();
         }
     }

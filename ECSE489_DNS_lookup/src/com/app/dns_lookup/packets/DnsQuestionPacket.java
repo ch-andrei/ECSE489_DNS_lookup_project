@@ -47,7 +47,7 @@ public class DnsQuestionPacket extends DnsPacket{
         } catch (NumberFormatException nfe) {
             TextUI.printError(3, "Invalid lookup format.");
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            TextUI.printError(2, "Unknown host exception.");
         }
     }
 

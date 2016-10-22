@@ -27,7 +27,7 @@ public class DnsLookup {
                 printRequest(request);
                 performDnsLookup(request);
             } else
-                TextUI.printError(3, "Invalid lookup format.");
+                TextUI.printError(3, "Invalid lookup format. Terminating.");
         } catch (IOException e){
             e.printStackTrace();
         }

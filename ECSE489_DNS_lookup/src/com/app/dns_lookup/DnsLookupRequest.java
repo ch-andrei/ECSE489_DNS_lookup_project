@@ -59,7 +59,8 @@ public class DnsLookupRequest {
         String serverIp = "";
         String domainName = "";
         if (args.length < 2) {
-            throw new IOException("DNS Client missing arguments!");
+            TextUI.printError(3, "DNS Client missing arguments!");
+            return;
         }
         // parse arguments
         for (int i = 0; i < args.length; i++) {
