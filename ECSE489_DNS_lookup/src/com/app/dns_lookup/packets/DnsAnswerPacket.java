@@ -51,8 +51,6 @@ public class DnsAnswerPacket extends DnsPacket{
         return ancount_buf.getShort(0);
     }
 
-
-
     public List<DnsAnswerSection> parsePacketInfo(){
         // init array for output
         List<DnsAnswerSection> out = new ArrayList<>();
@@ -65,20 +63,20 @@ public class DnsAnswerPacket extends DnsPacket{
                 // no error condition
                 break;
             case 1:
-                TextUI.printError(2, "Format error: the name server was unable to interpret the query");
-                return null;
+                TextUI.printError(2, "RCODE 1 Format error: the name server was unable to interpret the query");
+                break;
             case 2:
-                TextUI.printError(2, "Server failure: the name server was unable to process this query due to some internal problem");
-                return null;
+                TextUI.printError(2, "RCODE 2 Server failure: the name server was unable to process this query due to some internal problem");
+                break;
             case 3:
-                TextUI.printError(1, "Name error: domain name referenced in the query does not exist (meaningful only for responses from an authoritative name server) ");
-                return null;
+                TextUI.printError(1, "RCODE 3 Name error: domain name referenced in the query does not exist (meaningful only for responses from an authoritative name server) ");
+                break;
             case 4:
-                TextUI.printError(2, "Not implemented: the name server does not support the requested kind of query");
-                return null;
+                TextUI.printError(2, "RCODE 4 Not implemented: the name server does not support the requested kind of query");
+                break;
             case 5:
-                TextUI.printError(2, "Refused: the name server refuses to perform the requested operation for policy reasons");
-                return null;
+                TextUI.printError(2, "RCODE 5 Refused: the name server refuses to perform the requested operation for policy reasons");
+                break;
         }
 
         if (!parseRecursive()){
@@ -103,11 +101,11 @@ public class DnsAnswerPacket extends DnsPacket{
             // set up an answer
             DnsAnswerSection answer;
             if (parsed < parseAncount()){
-                answer = new DnsAnswerSection(0);
+                answer = new DnsAnswerSection(0); // answer section
             } else if( parsed < parseArcount()){
-                answer = new DnsAnswerSection(1);
+                answer = new DnsAnswerSection(1); // additional section
             } else {
-                answer = new DnsAnswerSection(2);
+                answer = new DnsAnswerSection(2); // authority section
             }
 
             //TextUI.print("[" + parsed + "]b4 name: " + offset);
@@ -162,7 +160,6 @@ public class DnsAnswerPacket extends DnsPacket{
             //TextUI.print("rdlen" + RDLENGTH);
 
             offset += 2;
-            String RDATA = "";
             if (answer.getType().equals("A")) {
                 // get ip
                 byte[] ip = new byte[4];
@@ -183,7 +180,7 @@ public class DnsAnswerPacket extends DnsPacket{
                 // get EXCHANGE field
                 int[] offset_ptr = new int[]{offset};
                 str += recursiveParse(offset_ptr);
-                str = str.substring(0, str.length()-1); // remove last .
+                str = str.substring(0, str.length()-1); // remove last . (dot)
                 offset = offset_ptr[0];
                 answer.setRdata(str);
             } else {

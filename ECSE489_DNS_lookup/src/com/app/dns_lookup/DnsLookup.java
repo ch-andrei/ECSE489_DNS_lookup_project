@@ -6,15 +6,13 @@ import com.app.dns_lookup.packets.DnsPacket;
 import com.app.dns_lookup.packets.DnsQuestionPacket;
 import com.app.user_interface.TextUI;
 
-import javax.swing.text.html.parser.TagElement;
-import javax.xml.soap.Text;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class DnsClient {
+public class DnsLookup {
 
     /**
      *
@@ -41,7 +39,7 @@ public class DnsClient {
      * @throws IOException
      */
     public static void performDnsLookup(DnsLookupRequest request) throws IOException{
-        DatagramSocket socket = new DatagramSocket();
+        DatagramSocket socket = new DatagramSocket(Integer.valueOf(request.getPort()));
         int timeout = Integer.valueOf(request.getTimeout());
         socket.setSoTimeout(timeout);
 
@@ -60,7 +58,7 @@ public class DnsClient {
                 socket.send(questionPacket.getDatagramPacket());
                 TextUI.print("[" + (counter + 1) + "] Sending question complete.");
             } catch (IOException ie) {
-               TextUI.printError(2, "Failed to send packet.");
+                TextUI.printError(2, "Failed to send packet.");
                 return;
             }
 
@@ -91,7 +89,7 @@ public class DnsClient {
     }
 
     /**
-     * 
+     *
      * @param answerPacket
      */
     public static void printAnswers(DnsAnswerPacket answerPacket){
@@ -105,6 +103,8 @@ public class DnsClient {
      * @param answers
      */
     public static void printAnswers(DnsAnswerPacket answerPacket, List<DnsAnswerSection> answers){
+        if (answerPacket == null)
+            return;
         for (int segment = 0; segment < 3; segment++){
             int count;
             switch (segment) {
@@ -114,40 +114,42 @@ public class DnsClient {
                 case 0:
                     TextUI.printAnswerSection("" + (answerPacket.parseAncount()));
                     count = answerPacket.parseAncount();
+                    printSegment(answers, 0, answerPacket);
                     break;
                 case 1:
                     TextUI.printAuthoritySection("" + answerPacket.parseAuthcount());
                     count = answerPacket.parseAuthcount();
+                    printSegment(answers, 2, answerPacket);
                     break;
                 case 2:
                     TextUI.printAdditionalSection("" + answerPacket.parseArcount());
                     count = answerPacket.parseArcount();
+                    printSegment(answers, 1, answerPacket);
                     break;
             }
             if (count == 0)
                 TextUI.printError(1,"");
-            else
-                printSegment(answers, 2, answerPacket);
         }
     }
 
     /**
      *
      * @param answers
-     * @param segment
      * @param answerPacket
      */
     public static void printSegment(List<DnsAnswerSection> answers, int segment, DnsAnswerPacket answerPacket){
-        for (DnsAnswerSection answerSection : answers) {
-            if (answerSection != null && answerSection.getSegment() == 0) {
-                if (answerSection.getType().equals("A")) {
-                    TextUI.printRecordsA("A", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                } else if (answerSection.getType().equals("NS") || answerSection.getType().equals("CNAME")) {
-                    TextUI.printRecordsCNAMEorNS(answerSection.getType(), answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                } else if (answerSection.getType().equals("MX")) {
-                    TextUI.printRecrodsMX("MX", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                } else {
-                    TextUI.printError(5, "answer segment type not A, NS, CNAME or MX.");
+        if (answerPacket != null && answers != null) {
+            for (DnsAnswerSection answerSection : answers) {
+                if (answerSection != null && answerSection.getSegment() == segment) {
+                    if (answerSection.getType().equals("A")) {
+                        TextUI.printRecordsA("A", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                    } else if (answerSection.getType().equals("NS") || answerSection.getType().equals("CNAME")) {
+                        TextUI.printRecordsCNAMEorNS(answerSection.getType(), answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                    } else if (answerSection.getType().equals("MX")) {
+                        TextUI.printRecrodsMX("MX", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
+                    } else {
+                        TextUI.printError(5, "answer segment type not equal to A, NS, CNAME, MX.");
+                    }
                 }
             }
         }

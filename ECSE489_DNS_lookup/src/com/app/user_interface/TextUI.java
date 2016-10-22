@@ -8,7 +8,7 @@ public class TextUI {
 
     //Summarize the query that has been sent
     public static void printRequest(String name, String server_IP, String request_type) {
-        System.out.println("DnsClient sending request for " + name +
+        System.out.println("DnsLookup sending request for " + name +
                 "\nServer: " + server_IP +
                 "\nRequest type: " + request_type);
     }
