@@ -21,17 +21,13 @@ public class DnsQuestionPacket extends DnsPacket{
         this.packetDataBuffer = ByteBuffer.allocate(computePacketLength(request));
         this.random = new Random(System.currentTimeMillis());
         initPacket(request); // setup packetDataBuffer
-        try {
-            InetAddress lookupServer = InetAddress.getByAddress(request.getServerIpAsByteArray());
-            this.datagramPacket = new DatagramPacket(packetDataBuffer.array(), 0,
-                    packetDataBuffer.array().length, lookupServer, Integer.valueOf(request.getPort()));
-        } catch (NumberFormatException nfe) {
-            TextUI.printError(3, "Invalid lookup format.");
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
     }
 
+    /**
+     *
+     * @param request
+     * @return
+     */
     private int computePacketLength(DnsLookupRequest request){
         // header + QNAME + 1 empty byte (end of QNAME) + 4 bytes for QCLASS and QTYPE + 1 for length adjustement
         return HEADER_SIZE + request.getDomainName().length() + 6;
@@ -44,6 +40,15 @@ public class DnsQuestionPacket extends DnsPacket{
     private void initPacket(DnsLookupRequest request) {
         initPacketHeader();
         initPacketData(request);
+        try {
+            InetAddress lookupServer = InetAddress.getByAddress(request.getServerIpAsByteArray());
+            this.datagramPacket = new DatagramPacket(packetDataBuffer.array(), 0,
+                    packetDataBuffer.array().length, lookupServer, Integer.valueOf(request.getPort()));
+        } catch (NumberFormatException nfe) {
+            TextUI.printError(3, "Invalid lookup format.");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

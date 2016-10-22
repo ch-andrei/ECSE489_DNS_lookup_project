@@ -12,46 +12,20 @@ import java.util.List;
  */
 public class DnsAnswerPacket extends DnsPacket{
 
+    private List<DnsAnswerSection> answers;
+
     public DnsAnswerPacket(DatagramPacket packet) {
         this.datagramPacket = packet;
         this.packetDataBuffer = ByteBuffer.wrap(packet.getData());
+        this.answers = null;
     }
 
-    public byte[] parseID(){
-        return (new byte[] {packetDataBuffer.array()[0], packetDataBuffer.array()[1]});
+    public List<DnsAnswerSection> parseAndGetAnswers(){
+        parsePacketInfo();
+        return getAnswers();
     }
 
-    public boolean parseAuthority(){
-        return (((packetDataBuffer.array()[2] & 0b00000100) == (0b00000100)) ? true : false);
-    }
-
-    public boolean parseRecursive(){
-        return (((packetDataBuffer.array()[3] & 0b10000000) == (0b10000000)) ? true : false);
-    }
-
-    public byte parseRcode(){
-        return (byte)(packetDataBuffer.array()[3] & 0b00001111);
-    }
-
-    public int parseAncount(){
-        byte[] ancount = new byte[] {packetDataBuffer.array()[6], packetDataBuffer.array()[7]};
-        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
-        return ancount_buf.getShort(0);
-    }
-
-    public int parseAuthcount(){
-        byte[] ancount = new byte[] {packetDataBuffer.array()[8], packetDataBuffer.array()[9]};
-        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
-        return ancount_buf.getShort(0);
-    }
-
-    public int parseArcount(){
-        byte[] ancount = new byte[] {packetDataBuffer.array()[10], packetDataBuffer.array()[11]};
-        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
-        return ancount_buf.getShort(0);
-    }
-
-    public List<DnsAnswerSection> parsePacketInfo(){
+    private void parsePacketInfo(){
         // init array for output
         List<DnsAnswerSection> out = new ArrayList<>();
 
@@ -190,10 +164,15 @@ public class DnsAnswerPacket extends DnsPacket{
             parsed++;
         }
 
-        return out;
+        this.answers = out;
     }
 
-    public String recursiveParse(int[] offset){
+    /**
+     * parses the current packet using
+     * @param offset
+     * @return
+     */
+    private String recursiveParse(int[] offset){
         //TextUI.print("**************\nrec parse starting offset " + offset[0]);
         String str = "";
         int label_offset = offset[0];
@@ -224,7 +203,41 @@ public class DnsAnswerPacket extends DnsPacket{
         }
     }
 
-    public boolean checkReference(int offset){
+    public byte[] parseID(){
+        return (new byte[] {packetDataBuffer.array()[0], packetDataBuffer.array()[1]});
+    }
+
+    public boolean parseAuthority(){
+        return (((packetDataBuffer.array()[2] & 0b00000100) == (0b00000100)) ? true : false);
+    }
+
+    public boolean parseRecursive(){
+        return (((packetDataBuffer.array()[3] & 0b10000000) == (0b10000000)) ? true : false);
+    }
+
+    public byte parseRcode(){
+        return (byte)(packetDataBuffer.array()[3] & 0b00001111);
+    }
+
+    public int parseAncount(){
+        byte[] ancount = new byte[] {packetDataBuffer.array()[6], packetDataBuffer.array()[7]};
+        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
+        return ancount_buf.getShort(0);
+    }
+
+    public int parseAuthcount(){
+        byte[] ancount = new byte[] {packetDataBuffer.array()[8], packetDataBuffer.array()[9]};
+        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
+        return ancount_buf.getShort(0);
+    }
+
+    public int parseArcount(){
+        byte[] ancount = new byte[] {packetDataBuffer.array()[10], packetDataBuffer.array()[11]};
+        ByteBuffer ancount_buf = ByteBuffer.wrap(ancount);
+        return ancount_buf.getShort(0);
+    }
+
+    private boolean checkReference(int offset){
         byte nameStart = packetDataBuffer.array()[offset];
         //TextUI.print("ref check BYTE " + bytesToHex(new byte[] {nameStart}));
         if ((nameStart & (byte)0b11000000) == (byte)0b11000000) {
@@ -242,5 +255,9 @@ public class DnsAnswerPacket extends DnsPacket{
             if (i++ != 3) str += ".";
         }
         return str;
+    }
+
+    public List<DnsAnswerSection> getAnswers() {
+        return answers;
     }
 }

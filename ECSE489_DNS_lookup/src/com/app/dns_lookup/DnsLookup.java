@@ -93,7 +93,7 @@ public class DnsLookup {
      * @param answerPacket
      */
     public static void printAnswers(DnsAnswerPacket answerPacket){
-        List<DnsAnswerSection> answers = answerPacket.parsePacketInfo();
+        List<DnsAnswerSection> answers = answerPacket.parseAndGetAnswers();
         printAnswers(answerPacket, answers);
     }
 

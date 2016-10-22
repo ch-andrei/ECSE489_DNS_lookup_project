@@ -36,12 +36,22 @@ public class DnsLookupRequest {
         domainName = "";
     }
 
+    /**
+     *
+     * @param args
+     * @throws IOException
+     */
     public DnsLookupRequest(String[] args) throws IOException{
         this();
-        init(args);
+        initRequest(args);
     }
 
-    private void init(String[] args) throws IOException{
+    /**
+     *
+     * @param args
+     * @throws IOException
+     */
+    private void initRequest(String[] args) throws IOException{
         String timeout = "";
         String maxRetries = "";
         String port = "";
