@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 public abstract class DnsPacket {
 
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    public static final int MAX_PACKET_SIZE = 65536; // arbitrary (logical) limit, in bytes
+    public static final int MAX_PACKET_SIZE = 512; // packet size limit, in bytes (as per RFC1035)
     public static final int HEADER_SIZE = 12; // in bytes
     public static final int MAX_LABEL_LENGTH = 64; // in bytes
 

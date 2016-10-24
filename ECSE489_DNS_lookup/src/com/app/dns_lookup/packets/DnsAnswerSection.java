@@ -5,30 +5,28 @@ package com.app.dns_lookup.packets;
  */
 public class DnsAnswerSection {
 
-    private int segment; // 0, 1, 2: answer, additional, authority
+    private int segmentType; // 0, 1, 2: answer, additional, authority
     private String name;
     private String type;
     private String aclass;
     private String ttl;
-    private String rdlength;
     private String rdata;
 
-    public DnsAnswerSection(int segment) {
+    public DnsAnswerSection(int segmentType) {
         name = "";
         type = "";
         aclass = "";
         ttl = "";
-        rdlength = "";
         rdata = "";
-        this.segment = segment;
+        this.segmentType = segmentType;
     }
 
-    public int getSegment() {
-        return segment;
+    public int getSegmentType() {
+        return segmentType;
     }
 
-    public void setSegment(int segment) {
-        this.segment = segment;
+    public void setSegmentType(int segmentType) {
+        this.segmentType = segmentType;
     }
 
     public String getName() {
@@ -61,14 +59,6 @@ public class DnsAnswerSection {
 
     public void setTtl(String ttl) {
         this.ttl = ttl;
-    }
-
-    public String getRdlength() {
-        return rdlength;
-    }
-
-    public void setRdlength(String rdlength) {
-        this.rdlength = rdlength;
     }
 
     public String getRdata() {

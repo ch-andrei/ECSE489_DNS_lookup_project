@@ -15,7 +15,8 @@ public class TextUI {
 
     //When a valid response is received
     public static void printResponseTime(String time, String num_retries) {
-        System.out.println("Response received after " + time + " milliseconds (" + num_retries + new String((Integer.valueOf(num_retries) > 1) ? " retries)." : " retry)."));
+        int retries = (Integer.valueOf(num_retries));
+        System.out.println("Response received after " + time + " milliseconds (" + num_retries + new String((retries > 1 || retries == 0) ? " retries)." : " retry)."));
     }
 
     //When the response contains records in the Answer Section

@@ -94,7 +94,7 @@ public class DnsQuestionPacket extends DnsPacket{
 
         // write QTYPE (type-A, type-NS, type-MX)
         switch(request.getRequestType()){
-            default: // write 0x0001 as if A-type: this should not happen
+            default: // this should not happen; but write 0x0001 as if A-type
                 packetDataBuffer.put((byte)0x00);
                 packetDataBuffer.put((byte)0x01);
                 break;

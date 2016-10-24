@@ -105,9 +105,9 @@ public class DnsLookup {
     public static void printAnswers(DnsAnswerPacket answerPacket, List<DnsAnswerSection> answers){
         if (answerPacket == null)
             return;
-        for (int segment = 0; segment < 3; segment++){
+        for (int segmentType = 0; segmentType <= 2; segmentType++){
             int count;
-            switch (segment) {
+            switch (segmentType) {
                 default:
                     count = 0;
                     break;
@@ -140,14 +140,17 @@ public class DnsLookup {
     public static void printSegment(List<DnsAnswerSection> answers, int segment, DnsAnswerPacket answerPacket){
         if (answerPacket != null && answers != null) {
             for (DnsAnswerSection answerSection : answers) {
-                if (answerSection != null && answerSection.getSegment() == segment) {
+                if (answerSection != null && answerSection.getSegmentType() == segment) {
                     if (answerSection.getType().equals("A")) {
                         TextUI.printRecordsA("A", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
                     } else if (answerSection.getType().equals("NS") || answerSection.getType().equals("CNAME")) {
                         TextUI.printRecordsCNAMEorNS(answerSection.getType(), answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
                     } else if (answerSection.getType().equals("MX")) {
                         TextUI.printRecrodsMX("MX", answerSection.getRdata(), Integer.valueOf(answerSection.getTtl()), (answerPacket.parseAuthority()) ? "auth" : "nonauth");
-                    } else {
+                    } else if(answerSection.getType().equals("SOA")){
+                        TextUI.printRecordsCNAMEorNS("SOA", "", Integer.valueOf(answerSection.getTtl()), "auth");
+                    }
+                    else {
                         TextUI.printError(5, "answer segment type not equal to A, NS, CNAME, MX.");
                     }
                 }

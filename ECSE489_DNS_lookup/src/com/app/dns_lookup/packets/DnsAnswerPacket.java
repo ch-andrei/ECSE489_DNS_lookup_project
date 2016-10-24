@@ -106,6 +106,8 @@ public class DnsAnswerPacket extends DnsPacket{
                 answer.setType("MX");
             else if (type == 0x05)
                 answer.setType("CNAME");
+            else if (type == 0x06)
+                answer.setType("SOA");
             else {
                 TextUI.printError(5, "Unexpected response TYPE {" + bytesToHex(new byte[]{type}) + "}");
             }
@@ -125,14 +127,9 @@ public class DnsAnswerPacket extends DnsPacket{
             ByteBuffer temp = ByteBuffer.wrap(ttl);
             // need to get unsigned value
             answer.setTtl("" + ((long) temp.getInt(0) & 0xffffffffL));
-
-            // get RDATA
+            // add offset to go after ttl value
             offset += 4;
-            byte rdlength[] = new byte[]{packetDataBuffer.array()[offset], packetDataBuffer.array()[offset + 1]};
-            temp = ByteBuffer.wrap(rdlength);
-            int RDLENGTH = (temp.getShort() & 0xffff);
-            //TextUI.print("rdlen" + RDLENGTH);
-
+            // add offset to go after RDLENGTH value
             offset += 2;
             if (answer.getType().equals("A")) {
                 // get ip
